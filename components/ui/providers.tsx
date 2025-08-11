@@ -6,17 +6,17 @@ import { SessionProvider as CustomSessionProvider } from "@/lib/contexts/session
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <NextauthSessionProvider>
-      <CustomSessionProvider>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem={true}
-          disableTransitionOnChange={true}
-        >
-          {children}
-        </ThemeProvider>
-      </CustomSessionProvider>
-    </NextauthSessionProvider>
+    // <NextauthSessionProvider>
+    <CustomSessionProvider>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem={true}
+        disableTransitionOnChange={true}
+      >
+        {children}
+      </ThemeProvider>
+    </CustomSessionProvider>
+    // </NextauthSessionProvider>
   );
 }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+const API_URL = process.env.BACKEND_API_URL || "http://localhost:3001";
 
 export async function POST(req: NextRequest) {
-  const API_URL = process.env.BACKEND_API_URL || "http://localhost:3001";
   const token = req.headers.get("Authorization");
 
   if (!token) {
@@ -45,4 +45,25 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+export async function GET(req: NextRequest) {
+  const token = req.headers.get("Authorization");
+
+  if (!token) {
+    return NextResponse.json({ message: "No token provided" }, { status: 401 });
+  }
+
+  const response = await fetch(`${API_URL}/api/mood`, {
+    headers: {
+      Authorization: token,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Failed to log activity");
+  }
+
+  return response.json();
 }

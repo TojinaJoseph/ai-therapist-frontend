@@ -88,7 +88,16 @@ interface Activity {
   createdAt: Date;
   updatedAt: Date;
 }
-
+interface ScoreRecord extends Activity {
+  createdAt: Date; // ISO date string
+  score: number;
+  timestamp: Date; // ISO date string
+  updatedAt: Date; // ISO date string
+  userId: string;
+  __v: number;
+  _id: string;
+}
+[];
 // Add this interface for stats
 interface DailyStats {
   moodScore: number | null;
@@ -99,7 +108,9 @@ interface DailyStats {
 }
 
 // Update the calculateDailyStats function to show correct stats
-const calculateDailyStats = (activities: Activity[]): DailyStats => {
+const calculateDailyStats = async (
+  activities: Activity[]
+): Promise<DailyStats> => {
   const today = startOfDay(new Date());
   const todaysActivities = activities.filter((activity) =>
     isWithinInterval(new Date(activity.timestamp), {
@@ -110,10 +121,7 @@ const calculateDailyStats = (activities: Activity[]): DailyStats => {
   console.log(todaysActivities);
   // Calculate mood score (average of today's mood entries)
 
-  const moodEntries = todaysActivities.filter(
-    (a) => a.type === "mood" && a.moodScore !== null
-  );
-  console.log(moodEntries);
+  const moodEntries: ScoreRecord[] = await getMoodEntries();
   const averageMood =
     moodEntries.length > 0
       ? Math.round(
@@ -134,7 +142,7 @@ const calculateDailyStats = (activities: Activity[]): DailyStats => {
 };
 
 // Rename the function
-const generateInsights = (activities: Activity[]) => {
+const generateInsights = async (activities: Activity[]) => {
   const insights: {
     title: string;
     description: string;
@@ -149,9 +157,9 @@ const generateInsights = (activities: Activity[]) => {
   );
 
   // Analyze mood patterns
-  const moodEntries = recentActivities.filter(
-    (a) => a.type === "mood" && a.moodScore !== null
-  );
+
+  const moodEntries: ScoreRecord[] = await getMoodEntries();
+
   if (moodEntries.length >= 2) {
     const averageMood =
       moodEntries.reduce((acc, curr) => acc + (curr.moodScore || 0), 0) /
@@ -354,14 +362,22 @@ export default function Dashboard() {
   // Add this effect to update stats when activities change
   useEffect(() => {
     if (activities.length > 0) {
-      setDailyStats(calculateDailyStats(activities));
+      const fetchStats = async () => {
+        const stats = await calculateDailyStats(activities);
+        setDailyStats(stats);
+      };
+      fetchStats();
     }
   }, [activities]);
 
   // Update the effect
   useEffect(() => {
     if (activities.length > 0) {
-      setInsights(generateInsights(activities));
+      const fetchInsights = async () => {
+        const insight = await generateInsights(activities);
+        setInsights(insight);
+      };
+      fetchInsights();
     }
   }, [activities]);
 
@@ -386,16 +402,14 @@ export default function Dashboard() {
       const activities = activitiesResponse;
       console.log("act", activities);
       // Calculate mood score from activities
-      const moodEntries =
-        activities.filter(
-          (a: Activity) => a.type === "mood" && a.moodScore !== null
-        ) || null;
-      // const moodEntries = await getMoodEntries();
+
+      const moodEntries: ScoreRecord[] = await getMoodEntries();
+      console.log(moodEntries);
       const averageMood =
         moodEntries.length > 0
           ? Math.round(
               moodEntries.reduce(
-                (acc: number, curr: Activity) => acc + (curr.moodScore || 0),
+                (acc: number, curr: ScoreRecord) => acc + (curr.score || 0),
                 0
               ) / moodEntries.length
             )

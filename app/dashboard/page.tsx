@@ -11,8 +11,6 @@ import {
   Heart,
   Trophy,
   Bell,
-  AlertCircle,
-  PhoneCall,
   Sparkles,
   MessageSquare,
   BrainCircuit,
@@ -28,7 +26,6 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-// import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Container } from "@/components/ui/container";
 import { cn } from "@/lib/utils";
 
@@ -44,7 +41,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
   addDays,
   format,

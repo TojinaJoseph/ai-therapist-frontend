@@ -10,11 +10,10 @@ export type Message = {
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { sessionId: string } }
+  context: { params: Promise<{ sessionId: string }> }
 ) {
   try {
-    const { sessionId } = params;
-    console.log(`Getting chat history for session ${sessionId}`);
+    const { sessionId } = await context.params; // Await because it's a Promise
 
     const response = await fetch(
       `${BACKEND_API_URL}/chat/sessions/${sessionId}/history`,

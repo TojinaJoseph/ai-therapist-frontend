@@ -25,7 +25,7 @@ interface MoodResponse {
     timestamp: string;
   };
 }
-const API_BASE = process.env.BACKEND_API_URL || "http://localhost:3001";
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:3001";
 
 export async function trackMood(data: MoodEntry): Promise<MoodResponse> {
   const token = localStorage.getItem("token");

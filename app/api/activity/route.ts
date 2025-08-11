@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const API_URL = process.env.BACKEND_API_URL || "http://localhost:3001";
+const API_URL = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:3001";
 
 export async function POST(req: NextRequest) {
   const token = req.headers.get("Authorization");

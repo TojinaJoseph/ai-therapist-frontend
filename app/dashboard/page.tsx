@@ -85,7 +85,7 @@ interface Activity {
   createdAt: Date;
   updatedAt: Date;
 }
-interface ScoreRecord extends Activity {
+interface MoodRecord extends Activity {
   createdAt: Date; // ISO date string
   score: number;
   timestamp: Date; // ISO date string
@@ -94,7 +94,6 @@ interface ScoreRecord extends Activity {
   __v: number;
   _id: string;
 }
-[];
 // Add this interface for stats
 interface DailyStats {
   moodScore: number | null;
@@ -115,24 +114,36 @@ const calculateDailyStats = async (
       end: addDays(today, 1),
     })
   );
-  console.log(todaysActivities);
+
   // Calculate mood score (average of today's mood entries)
 
-  const moodEntries: ScoreRecord[] = await getMoodEntries();
+  const moodEntries: MoodRecord[] = await getMoodEntries();
+  const moodEntriesToday = moodEntries.filter((mood: MoodRecord) =>
+    isWithinInterval(new Date(mood.timestamp), {
+      start: today,
+      end: addDays(today, 1),
+    })
+  );
+
   const averageMood =
-    moodEntries.length > 0
+    moodEntriesToday.length > 0
       ? Math.round(
-          moodEntries.reduce((acc, curr) => acc + (curr.moodScore || 0), 0) /
-            moodEntries.length
+          moodEntriesToday.reduce(
+            (acc: number, curr: MoodRecord) => acc + (curr.score || 0),
+            0
+          ) / moodEntriesToday.length
         )
       : null;
 
   // Count therapy sessions (all sessions ever)
-  const therapySessions = activities.filter((a) => a.type === "therapy").length;
+
+  const therapySessions = await getAllChatSessions();
+
+  // const therapySessions = activities.filter((a) => a.type === "therapy").length;
   return {
     moodScore: averageMood,
     completionRate: 100, // Always 100% as requested
-    mindfulnessCount: therapySessions, // Total number of therapy sessions
+    mindfulnessCount: therapySessions.length, // Total number of therapy sessions
     totalActivities: todaysActivities.length,
     lastUpdated: new Date(),
   };
@@ -155,7 +166,7 @@ const generateInsights = async (activities: Activity[]) => {
 
   // Analyze mood patterns
 
-  const moodEntries: ScoreRecord[] = await getMoodEntries();
+  const moodEntries: MoodRecord[] = await getMoodEntries();
 
   if (moodEntries.length >= 2) {
     const averageMood =
@@ -335,7 +346,7 @@ export default function Dashboard() {
         })),
       });
     }
-    console.log(days);
+
     return days;
   };
 
@@ -345,9 +356,7 @@ export default function Dashboard() {
       const userActivities = await getUserActivities(user?._id);
       setActivities(userActivities);
       setActivityHistory(transformActivitiesToDayActivity(userActivities));
-    } catch (error) {
-      console.error("Error loading activities:", error);
-    }
+    } catch (error) {}
   }, []);
 
   useEffect(() => {
@@ -383,45 +392,52 @@ export default function Dashboard() {
     try {
       // Fetch therapy sessions using the chat API
       const sessions = await getAllChatSessions();
-      console.log(sessions);
 
       // Fetch today's activities
 
       const activitiesResponse = await getUserActivities(user?._id);
-      console.log(activitiesResponse);
 
+      const today = startOfDay(new Date());
+      const todaysActivities = activitiesResponse.filter((activity: Activity) =>
+        isWithinInterval(new Date(activity.timestamp), {
+          start: today,
+          end: addDays(today, 1),
+        })
+      );
       // if (!activitiesResponse.ok) throw new Error("Failed to fetch activities");
 
       if (activitiesResponse.length === 0)
         throw new Error("Failed to fetch activities");
 
       // const activities = await activitiesResponse.json();
-      const activities = activitiesResponse;
-      console.log("act", activities);
+
       // Calculate mood score from activities
 
-      const moodEntries: ScoreRecord[] = await getMoodEntries();
-      console.log(moodEntries);
+      const moodEntries: MoodRecord[] = await getMoodEntries();
+      const moodEntriesToday = moodEntries.filter((mood: MoodRecord) =>
+        isWithinInterval(new Date(mood.timestamp), {
+          start: today,
+          end: addDays(today, 1),
+        })
+      );
+
       const averageMood =
-        moodEntries.length > 0
+        moodEntriesToday.length > 0
           ? Math.round(
-              moodEntries.reduce(
-                (acc: number, curr: ScoreRecord) => acc + (curr.score || 0),
+              moodEntriesToday.reduce(
+                (acc: number, curr: MoodRecord) => acc + (curr.score || 0),
                 0
-              ) / moodEntries.length
+              ) / moodEntriesToday.length
             )
           : null;
-      console.log(averageMood, 100, sessions.length, activities.length);
       setDailyStats({
         moodScore: averageMood,
         completionRate: 100,
         mindfulnessCount: sessions.length, // Total number of therapy sessions
-        totalActivities: activities.length,
+        totalActivities: todaysActivities.length,
         lastUpdated: new Date(),
       });
-    } catch (error) {
-      console.error("Error fetching daily stats:", error);
-    }
+    } catch (error) {}
   }, []);
 
   // Fetch stats on mount and every 5 minutes
@@ -487,7 +503,6 @@ export default function Dashboard() {
       });
       setShowMoodModal(false);
     } catch (error) {
-      console.error("Error saving mood:", error);
     } finally {
       setIsSavingMood(false);
     }
@@ -511,9 +526,7 @@ export default function Dashboard() {
           });
           // Refresh activities after logging
           loadActivities();
-        } catch (error) {
-          console.error("Error logging game activity:", error);
-        }
+        } catch (error) {}
       }
     },
     [loadActivities, user]
@@ -770,7 +783,10 @@ export default function Dashboard() {
               Move the slider to track your current mood
             </DialogDescription>
           </DialogHeader>
-          <MoodForm onSuccess={() => setShowMoodModal(false)} />
+          <MoodForm
+            onSuccess={() => setShowMoodModal(false)}
+            onMoodLog={loadActivities}
+          />
         </DialogContent>
       </Dialog>
 

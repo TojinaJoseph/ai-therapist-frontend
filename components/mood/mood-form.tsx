@@ -10,9 +10,10 @@ import { useRouter } from "next/navigation";
 
 interface MoodFormProps {
   onSuccess?: () => void;
+  onMoodLog: () => void;
 }
 
-export function MoodForm({ onSuccess }: MoodFormProps) {
+export function MoodForm({ onSuccess, onMoodLog }: MoodFormProps) {
   const [moodScore, setMoodScore] = useState(50);
   const [isLoading, setIsLoading] = useState(false);
   // const { toast } = useToast();
@@ -80,6 +81,7 @@ export function MoodForm({ onSuccess }: MoodFormProps) {
 
       // Call onSuccess to close the modal
       onSuccess?.();
+      onMoodLog();
     } catch (error) {
       console.error("MoodForm: Error:", error);
       // toast({

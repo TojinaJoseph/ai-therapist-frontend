@@ -10,7 +10,7 @@ import { useSession } from "@/lib/contexts/session-context";
 export default function Header() {
   const { isAuthenticated, logout, user } = useSession();
   const navItems = [
-    { href: "/features", label: "Features" },
+    { href: "/dashboard", label: "Dashboard" },
     { href: "/about", label: "About Aura" },
   ];
 

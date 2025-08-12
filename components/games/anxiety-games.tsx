@@ -80,9 +80,7 @@ export const AnxietyGames = ({ onGamePlayed }: AnxietyGamesProps) => {
           gameId,
           games.find((g) => g.id === gameId)?.description || ""
         );
-      } catch (error) {
-        console.error("Error logging game activity:", error);
-      }
+      } catch (error) {}
     }
   };
 

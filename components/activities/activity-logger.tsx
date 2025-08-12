@@ -90,7 +90,6 @@ export function ActivityLogger({
       onActivityLogged();
       onOpenChange(false);
     } catch (error) {
-      console.error("Error logging activity:", error);
       // toast({
       //   title: "Error",
       //   description:

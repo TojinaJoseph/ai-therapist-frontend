@@ -677,14 +677,6 @@ export default function Dashboard() {
                       {format(new Date(), "MMMM d, yyyy")}
                     </CardDescription>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={fetchDailyStats}
-                    className="h-8 w-8"
-                  >
-                    <Loader2 className={cn("h-4 w-4", "animate-spin")} />
-                  </Button>
                 </div>
               </CardHeader>
               <CardContent>

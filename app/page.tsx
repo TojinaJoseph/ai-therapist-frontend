@@ -9,12 +9,44 @@ import {
   MessageSquareHeart,
   Waves,
   Lock,
+  Brain,
+  Shield,
+  Sparkles,
 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import React from "react";
 
 export default function Home() {
+  const welcomeSteps = [
+    {
+      title: "Hi, I'm Aura 👋",
+      description:
+        "Your AI companion for emotional well-being. I'm here to provide a safe, judgment-free space for you to express yourself.",
+      icon: Waves,
+    },
+    {
+      title: "Personalized Support 🌱",
+      description:
+        "I adapt to your needs and emotional state, offering evidence-based techniques and gentle guidance when you need it most.",
+      icon: Brain,
+    },
+    {
+      title: "Your Privacy Matters 🛡️",
+      description:
+        "Our conversations are completely private and secure. I follow strict ethical guidelines and respect your boundaries.",
+      icon: Shield,
+    },
+  ];
+
   const emotions = [
     { value: 0, label: "😔 Down", color: "from-blue-500/50" },
     { value: 25, label: "😊 Content", color: "from-green-500/50" },
@@ -25,7 +57,7 @@ export default function Home() {
   const [emotion, setEmotion] = useState(50);
   const [mounted, setMounted] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
-
+  const [currentStep, setCurrentStep] = useState(0);
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -224,6 +256,74 @@ export default function Home() {
           </div>
         </div>
       </section>
+      <Dialog open={showDialog} onOpenChange={setShowDialog}>
+        <DialogContent className="sm:max-w-[425px] bg-card/80 backdrop-blur-lg">
+          <DialogHeader>
+            <motion.div
+              key={currentStep}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-4"
+            >
+              <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                {welcomeSteps[currentStep] && (
+                  <div>
+                    {React.createElement(welcomeSteps[currentStep].icon, {
+                      className: "w-8 h-8 text-primary",
+                    })}
+                  </div>
+                )}
+              </div>
+              <DialogTitle className="text-2xl text-center">
+                {welcomeSteps[currentStep]?.title}
+              </DialogTitle>
+              <DialogDescription className="text-center text-base leading-relaxed">
+                {welcomeSteps[currentStep]?.description}
+              </DialogDescription>
+            </motion.div>
+          </DialogHeader>
+          <div className="flex justify-between items-center mt-8">
+            <div className="flex gap-2">
+              {welcomeSteps.map((_, index) => (
+                <div
+                  key={index}
+                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                    index === currentStep ? "bg-primary w-4" : "bg-primary/20"
+                  }`}
+                />
+              ))}
+            </div>
+            <Button
+              onClick={() => {
+                if (currentStep < welcomeSteps.length - 1) {
+                  setCurrentStep((c) => c + 1);
+                } else {
+                  setShowDialog(false);
+                  setCurrentStep(0);
+                  // Here you would navigate to the chat interface
+                }
+              }}
+              className="relative group px-6"
+            >
+              <span className="flex items-center gap-2">
+                {currentStep === welcomeSteps.length - 1 ? (
+                  <>
+                    Let&apos;s Begin
+                    <Sparkles className="w-4 h-4 animate-pulse" />
+                  </>
+                ) : (
+                  <>
+                    Next
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
+                  </>
+                )}
+              </span>
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

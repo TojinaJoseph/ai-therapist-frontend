@@ -28,7 +28,6 @@ export async function GET(
 
     if (!response.ok) {
       const error = await response.json();
-      console.error("Failed to get chat history:", error);
       return NextResponse.json(
         { error: error.error || "Failed to get chat history" },
         { status: response.status }
@@ -36,7 +35,6 @@ export async function GET(
     }
 
     const data = await response.json();
-    console.log("Chat history retrieved successfully:", data);
 
     // Format the response to match the frontend's expected format
     const formattedMessages = data.map((msg: Message) => ({
@@ -47,7 +45,6 @@ export async function GET(
 
     return NextResponse.json(formattedMessages);
   } catch (error) {
-    console.error("Error getting chat history:", error);
     return NextResponse.json(
       { error: "Failed to get chat history" },
       { status: 500 }

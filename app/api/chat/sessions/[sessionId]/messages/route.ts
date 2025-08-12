@@ -19,7 +19,6 @@ export async function POST(
       );
     }
 
-    console.log(`Sending message to session ${sessionId}:`, message);
     const response = await fetch(
       `${BACKEND_API_URL}/chat/sessions/${sessionId}/messages`,
       {
@@ -33,7 +32,6 @@ export async function POST(
 
     if (!response.ok) {
       const error = await response.json();
-      console.error("Failed to send message:", error);
       return NextResponse.json(
         { error: error.error || "Failed to send message" },
         { status: response.status }
@@ -41,10 +39,8 @@ export async function POST(
     }
 
     const data = await response.json();
-    console.log("Message sent successfully:", data);
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Error sending message:", error);
     return NextResponse.json(
       { error: "Failed to send message" },
       { status: 500 }

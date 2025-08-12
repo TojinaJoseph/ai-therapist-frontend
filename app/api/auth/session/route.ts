@@ -4,7 +4,6 @@ export async function GET(req: NextRequest) {
   try {
     // For now, return a mock authenticated session
     // In a real app, you would validate the session token and return the actual user data
-    // console.log(req);
     // const token = req.headers.get("Authorization");
 
     // if (!token) {
@@ -22,7 +21,6 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Error getting auth session:", error);
     return NextResponse.json(
       { error: "Failed to get auth session" },
       { status: 500 }

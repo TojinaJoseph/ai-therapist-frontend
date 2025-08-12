@@ -20,7 +20,6 @@ export async function GET(
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Error in chat history API:", error);
     return NextResponse.json(
       { error: "Failed to fetch chat history" },
       { status: 500 }
@@ -61,7 +60,6 @@ export async function POST(
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Error in chat API:", error);
     return NextResponse.json(
       { error: "Failed to process chat message" },
       { status: 500 }

@@ -6,7 +6,10 @@ export async function POST(req: NextRequest) {
   try {
     const res = await fetch(`${API_URL}/auth/logout`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token ? token : "",
+      },
     });
     const data = await res.json();
     return NextResponse.json(data, { status: res.status });

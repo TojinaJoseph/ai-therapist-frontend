@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 import {
   Brain,
   Calendar,
-  Activity,
   Sun,
   Moon,
   Heart,
@@ -17,6 +16,12 @@ import {
   ArrowRight,
   X,
   Loader2,
+  Dumbbell,
+  Footprints,
+  BookOpen,
+  PenTool,
+  HeartPulse,
+  Activity,
 } from "lucide-react";
 import {
   Card,
@@ -55,6 +60,16 @@ import { useSession } from "@/lib/contexts/session-context";
 import { getAllChatSessions } from "@/lib/api/chat";
 import { getUserActivities, logActivity } from "@/lib/api/activity";
 import { getMoodEntries } from "@/lib/api/mood";
+import { ScrollArea } from "@/components/ui/scroll-area";
+
+const activityIcons: Record<string, React.ElementType> = {
+  meditation: Brain,
+  exercise: Dumbbell,
+  walking: Footprints,
+  reading: BookOpen,
+  journaling: PenTool,
+  therapy: HeartPulse,
+};
 
 // Add this type definition
 type ActivityLevel = "none" | "low" | "medium" | "high";
@@ -72,6 +87,7 @@ interface DayActivity {
 
 // Add this interface near the top with other interfaces
 interface Activity {
+  isRecommendation: boolean;
   id: string;
   userId: string | null;
   type: string;
@@ -293,7 +309,6 @@ export default function Dashboard() {
       priority: "low" | "medium" | "high";
     }[]
   >([]);
-
   // New states for activities and wearables
   const [activities, setActivities] = useState<Activity[]>([]);
   const [showMoodModal, setShowMoodModal] = useState(false);
@@ -309,6 +324,7 @@ export default function Dashboard() {
     totalActivities: 0,
     lastUpdated: new Date(),
   });
+  const [recommendations, setRcommendations] = useState([]);
 
   // Add this function to transform activities into day activity format
   const transformActivitiesToDayActivity = (
@@ -354,6 +370,19 @@ export default function Dashboard() {
   const loadActivities = useCallback(async () => {
     try {
       const userActivities = await getUserActivities(user?._id);
+      const recommendation = userActivities.filter(
+        (i: Activity) => i.isRecommendation === true
+      );
+      const today = startOfDay(new Date());
+      const todaysRecommendations = recommendation.filter((i: Activity) =>
+        isWithinInterval(new Date(i.timestamp), {
+          start: today,
+          end: addDays(today, 1),
+        })
+      );
+
+      if (recommendation) setRcommendations(todaysRecommendations);
+
       setActivities(userActivities);
       setActivityHistory(transformActivitiesToDayActivity(userActivities));
     } catch (error) {}
@@ -718,39 +747,39 @@ export default function Dashboard() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {insights.length > 0 ? (
-                    insights.map((insight, index) => (
-                      <div
-                        key={index}
-                        className={cn(
-                          "p-4 rounded-lg space-y-2 transition-all hover:scale-[1.02]",
-                          insight.priority === "high"
-                            ? "bg-primary/10"
-                            : insight.priority === "medium"
-                            ? "bg-primary/5"
-                            : "bg-muted"
-                        )}
-                      >
-                        <div className="flex items-center gap-2">
-                          <insight.icon className="w-5 h-5 text-primary" />
-                          <p className="font-medium">{insight.title}</p>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          {insight.description}
+                <ScrollArea className="h-[250px]">
+                  <div className="space-y-4">
+                    {recommendations.length > 0 ? (
+                      recommendations.map((insight: Activity, index) => {
+                        const Icon = activityIcons[insight.type]; // fallback to Brain
+                        return (
+                          <div
+                            key={index}
+                            className={
+                              "p-4 rounded-lg space-y-2 transition-all hover:scale-[1.02]"
+                            }
+                          >
+                            <div className="flex items-center gap-2">
+                              <Icon className="w-5 h-5 text-primary" />
+                              <p className="font-medium">{insight.name}</p>
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              {insight.description}
+                            </p>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="text-center text-muted-foreground py-8">
+                        <Activity className="w-8 h-8 mx-auto mb-3 opacity-50" />
+                        <p>
+                          Complete more activities to receive personalized
+                          insights
                         </p>
                       </div>
-                    ))
-                  ) : (
-                    <div className="text-center text-muted-foreground py-8">
-                      <Activity className="w-8 h-8 mx-auto mb-3 opacity-50" />
-                      <p>
-                        Complete more activities to receive personalized
-                        insights
-                      </p>
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
+                </ScrollArea>
               </CardContent>
             </Card>
           </div>
@@ -778,6 +807,7 @@ export default function Dashboard() {
           <MoodForm
             onSuccess={() => setShowMoodModal(false)}
             onMoodLog={loadActivities}
+            insights={insights}
           />
         </DialogContent>
       </Dialog>

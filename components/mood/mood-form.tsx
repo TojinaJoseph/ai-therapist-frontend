@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { ElementType, ReactElement, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Loader2 } from "lucide-react";
@@ -11,9 +11,15 @@ import { useRouter } from "next/navigation";
 interface MoodFormProps {
   onSuccess?: () => void;
   onMoodLog: () => void;
+  insights?: {
+    title: string;
+    description: string;
+    icon: React.ElementType;
+    priority: "low" | "medium" | "high";
+  }[];
 }
 
-export function MoodForm({ onSuccess, onMoodLog }: MoodFormProps) {
+export function MoodForm({ onSuccess, onMoodLog, insights }: MoodFormProps) {
   const [moodScore, setMoodScore] = useState(50);
   const [isLoading, setIsLoading] = useState(false);
   // const { toast } = useToast();
@@ -46,13 +52,15 @@ export function MoodForm({ onSuccess, onMoodLog }: MoodFormProps) {
       setIsLoading(true);
       const token = localStorage.getItem("token");
 
+      console.log(JSON.stringify({ score: moodScore, priority: insights }));
+
       const response = await fetch("/api/mood", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ score: moodScore }),
+        body: JSON.stringify({ score: moodScore, priority: insights }),
       });
 
       if (!response.ok) {

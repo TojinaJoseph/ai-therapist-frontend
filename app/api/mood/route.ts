@@ -10,7 +10,8 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { score, note } = body;
+    const { score, note, priority } = body;
+    console.log(priority, note);
 
     if (typeof score !== "number" || score < 0 || score > 100) {
       return NextResponse.json(
@@ -25,7 +26,7 @@ export async function POST(req: NextRequest) {
         "Content-Type": "application/json",
         Authorization: token,
       },
-      body: JSON.stringify({ score, note }),
+      body: JSON.stringify({ score, note, priority }),
     });
 
     if (!response.ok) {

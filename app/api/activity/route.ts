@@ -9,8 +9,10 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    console.log("inside game activity", await req.json());
     const body = await req.json();
     const { type, name, description, duration } = body;
+    console.log(type, name, description, duration);
 
     if (!type || !name) {
       return NextResponse.json(
